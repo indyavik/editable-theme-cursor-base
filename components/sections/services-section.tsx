@@ -1,20 +1,24 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CheckCircle, Calculator, Users, FileText, BarChart3 } from "lucide-react"
+import { EditableText } from "@/components/ui/editable-text"
+import { EditableImage } from "@/components/ui/editable-image"
 
 interface ServicesSectionProps {
   data: {
+    title: string
     items: Array<{
       name: string
-      summary?: string
-      bullets: string[]
+      description: string
+      price: string
+      image?: string
     }>
   }
 }
 
 const serviceIcons = {
   "Monthly Bookkeeping": Calculator,
-  Payroll: Users,
-  "AP/AR": FileText,
+  "Payroll Processing": Users,
+  "AP/AR Management": FileText,
   "Financial Reporting": BarChart3,
 }
 
@@ -23,7 +27,11 @@ export function ServicesSection({ data }: ServicesSectionProps) {
     <section className="py-16 bg-slate-50">
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="text-center mb-12">
-          <h2 className="font-sans font-bold text-3xl lg:text-4xl text-slate-900 mb-4">Our Services</h2>
+          <EditableText
+            path="sections.services.title"
+            value={data.title}
+            className="font-sans font-bold text-3xl lg:text-4xl text-slate-900 mb-4 block"
+          />
           <p className="text-lg text-slate-600">Comprehensive bookkeeping solutions tailored to your business needs</p>
         </div>
 
@@ -34,21 +42,44 @@ export function ServicesSection({ data }: ServicesSectionProps) {
             return (
               <Card key={index} className="bg-white border-0 shadow-lg hover:shadow-xl transition-shadow">
                 <CardHeader className="text-center pb-4">
-                  <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <IconComponent className="w-6 h-6 text-emerald-600" />
-                  </div>
-                  <CardTitle className="text-xl font-semibold text-slate-900">{service.name}</CardTitle>
-                  {service.summary && <p className="text-sm text-slate-600">{service.summary}</p>}
+                  {service.image ? (
+                    <EditableImage
+                      path={`sections.services.items.${index}.image`}
+                      src={service.image}
+                      alt={service.name}
+                      width={80}
+                      height={80}
+                      className="rounded-lg mx-auto mb-4"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                      <IconComponent className="w-6 h-6 text-emerald-600" />
+                    </div>
+                  )}
+                  <CardTitle className="text-xl font-semibold text-slate-900">
+                    <EditableText
+                      path={`sections.services.items.${index}.name`}
+                      value={service.name}
+                      className="block"
+                    />
+                  </CardTitle>
+                  <EditableText
+                    path={`sections.services.items.${index}.description`}
+                    value={service.description}
+                    className="text-sm text-slate-600 block"
+                  />
                 </CardHeader>
                 <CardContent>
-                  <ul className="space-y-2">
-                    {service.bullets.map((bullet, bulletIndex) => (
-                      <li key={bulletIndex} className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-slate-600">{bullet}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-emerald-600 mb-2">
+                      <EditableText
+                        path={`sections.services.items.${index}.price`}
+                        value={service.price}
+                        className="block"
+                      />
+                    </div>
+                    <p className="text-xs text-slate-500">per month</p>
+                  </div>
                 </CardContent>
               </Card>
             )

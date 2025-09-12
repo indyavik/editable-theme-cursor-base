@@ -26,13 +26,13 @@ export function HeroSection({ data }: HeroSectionProps) {
         <div className="flex flex-col lg:flex-row items-center gap-12">
           <div className="flex-1 text-center lg:text-left animate-fade-in">
             <EditableText
-              path="sections.hero.shortHeadline"
+              path="sections.hero-main.shortHeadline"
               value={data.shortHeadline}
               className="font-heading font-bold text-4xl lg:text-6xl text-foreground mb-6 text-balance leading-tight block"
             />
             
             <EditableText
-              path="sections.hero.subHeadline"
+              path="sections.hero-main.subHeadline"
               value={data.subHeadline}
               className="text-xl text-muted-foreground mb-8 text-pretty leading-relaxed max-w-2xl block"
             />
@@ -43,10 +43,10 @@ export function HeroSection({ data }: HeroSectionProps) {
                 className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg btn-hover-lift shadow-lg"
                 asChild
               >
-                <a href={data.primaryCta.href}>
+                <a href={data.primaryCta?.href || '#'}>
                   <EditableText
-                    path="sections.hero.primaryCta.label"
-                    value={data.primaryCta.label}
+                    path="sections.hero-main.primaryCta.label"
+                    value={data.primaryCta?.label || 'Get Started'}
                   />
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </a>
@@ -57,10 +57,10 @@ export function HeroSection({ data }: HeroSectionProps) {
                 className="border-primary text-primary hover:bg-primary hover:text-primary-foreground px-8 py-3 text-lg btn-hover-lift transition-all duration-300 bg-transparent"
                 asChild
               >
-                <a href={data.secondaryCta.href}>
+                <a href={data.secondaryCta?.href || '#'}>
                   <EditableText
-                    path="sections.hero.secondaryCta.label"
-                    value={data.secondaryCta.label}
+                    path="sections.hero-main.secondaryCta.label"
+                    value={data.secondaryCta?.label || 'Learn More'}
                   />
                 </a>
               </Button>
@@ -71,7 +71,7 @@ export function HeroSection({ data }: HeroSectionProps) {
             <div className="relative">
               <div className="bg-white rounded-lg p-4 shadow-2xl">
                 <EditableImage
-                  path="sections.hero.heroImage"
+                  path="sections.hero-main.heroImage"
                   src={data.heroImage}
                   alt="Professional accountant"
                   width={500}

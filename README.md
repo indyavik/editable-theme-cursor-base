@@ -1,16 +1,19 @@
-# Theme1 - Editable Website Template
+# Theme-1-Sections - Editable Website Template with Section Management
 
-A Next.js website template with **in-place editing capabilities** for easy content management without a traditional CMS.
+A Next.js website template with **in-place editing capabilities** and **section-level management** for easy content management without a traditional CMS.
 
 ## 🎯 Features
 
 - **In-place text editing** - Click any text to edit directly on the page
+- **Section-level management** - Add, remove, and reorder entire sections
 - **Image upload functionality** - Upload and replace images with hover overlay
 - **Preview mode toggle** - Switch between viewing and editing modes
 - **Real-time character limits** - Enforce content constraints as you type
 - **Auto-save to localStorage** - Changes persist across browser sessions
 - **Publish/Discard system** - Save changes permanently or revert
 - **Schema-driven editing** - Only fields marked as `editable: true` can be modified
+- **Section picker modal** - Choose from available section types when adding new sections
+- **Confirmation dialogs** - Safe section removal with confirmation prompts
 
 ## 🚀 Quick Start
 
@@ -28,15 +31,18 @@ npm run dev
 
 1. **Enable Preview Mode**: Click the "Editing OFF" toggle in the top toolbar
 2. **Edit Text**: Click on any editable text to modify it directly
-3. **Upload Images**: Hover over images and click "Upload Image" button
-4. **Save Changes**: Click "Publish Changes" to save permanently
-5. **Discard Changes**: Click "Discard All" to revert to original
+3. **Manage Sections**: Hover over sections to see add/remove controls
+4. **Add Sections**: Click "+ Add Section" buttons or use the main "Add New Section" button
+5. **Remove Sections**: Click the trash icon and confirm removal
+6. **Upload Images**: Hover over images and click "Upload Image" button
+7. **Save Changes**: Click "Publish Changes" to save permanently
+8. **Discard Changes**: Click "Discard All" to revert to original
 
 ## 🏗️ Architecture Overview
 
 ### Core Components
 
-The editable functionality is built with **3 custom components**:
+The editable functionality is built with **4 custom components**:
 
 #### 1. **EditableText Component** (`components/ui/editable-text.tsx`)
 - **Purpose**: In-place text editing with `contentEditable`
@@ -54,77 +60,24 @@ The editable functionality is built with **3 custom components**:
   - Remove image functionality
   - Hover overlay with upload/remove buttons
 
-#### 3. **PreviewContext Provider** (`lib/preview-context.tsx`)
-- **Purpose**: Global state management for preview mode
+#### 3. **EditableSection Component** (`components/ui/editable-section.tsx`)
+- **Purpose**: Section-level management with add/remove controls
+- **Features**:
+  - Hover overlay with section controls
+  - Add section buttons (before/after)
+  - Remove section with confirmation dialog
+  - Drag handle for future reordering
+  - Visual feedback during interactions
+
+#### 4. **PreviewContext Provider** (`lib/preview-context.tsx`)
+- **Purpose**: Global state management for editing mode
 - **Features**:
   - Preview mode toggle
-  - Edit tracking and change counting
-  - localStorage persistence
+  - Field-level editing state
+  - Section management (add/remove/reorder)
+  - Auto-save to localStorage
   - Publish/discard functionality
-  - Schema validation
-
-### Schema System
-
-#### **Site Data Schema** (`lib/site-data-schema.ts`)
-Defines which fields are editable and their constraints:
-
-```typescript
-export const siteDataSchema = {
-  sections: {
-    hero: {
-      shortHeadline: { 
-        type: 'string', 
-        maxLength: 100, 
-        editable: true,  // ← This makes it editable
-        description: 'Main headline'
-      },
-      heroImage: {
-        type: 'image',   // ← Special type for images
-        editable: true,
-        description: 'Hero section image'
-      }
-    }
-  }
-}
-```
-
-#### **Site Data** (`lib/site-data.ts`)
-Contains the actual content:
-
-```typescript
-export const siteData = {
-  sections: [
-    {
-      id: "hero",
-      data: {
-        shortHeadline: "Your Headline Here",
-        heroImage: "/accountant.png"
-      }
-    }
-  ]
-}
-```
-
-## 📁 File Structure
-
-```
-theme1/
-├── components/
-│   ├── ui/
-│   │   ├── editable-text.tsx      # Text editing component
-│   │   ├── editable-image.tsx     # Image editing component
-│   │   └── button.tsx             # UI dependency
-│   └── sections/
-│       ├── hero-section.tsx       # Uses EditableText & EditableImage
-│       ├── about-section.tsx      # Uses EditableText
-│       └── contact-section.tsx    # Uses EditableText
-├── lib/
-│   ├── preview-context.tsx        # State management
-│   ├── site-data-schema.ts        # Field definitions
-│   └── site-data.ts              # Content data
-└── app/
-    └── page.tsx                   # Wraps with PreviewProvider
-```
+  - Section picker modal
 
 ## 🔧 Implementation Guide
 
@@ -188,6 +141,24 @@ import { EditableImage } from "@/components/ui/editable-image"
 />
 ```
 
+### Step 5: For Sections, Use EditableSection
+
+```typescript
+import { EditableSection } from "@/components/ui/editable-section"
+
+// Wrap your section component:
+<EditableSection
+  sectionId={section.id}
+  sectionType={section.type}
+  path={`sections.${section.id}`}
+  onRemove={() => handleRemoveSection(section.id)}
+  onAddBefore={() => handleAddSection(index)}
+  onAddAfter={() => handleAddSection(index + 1)}
+>
+  <YourSectionComponent data={section.data} />
+</EditableSection>
+```
+
 ## 🎨 Customization
 
 ### Adding New Editable Fields
@@ -196,6 +167,14 @@ import { EditableImage } from "@/components/ui/editable-image"
 2. **Update Data**: Add field value to site data
 3. **Update Component**: Wrap with `EditableText` or `EditableImage`
 4. **Test**: Enable preview mode and verify editing works
+
+### Adding New Section Types
+
+1. **Update Schema**: Add section configuration in `sectionConfig`
+2. **Update PreviewContext**: Add default data in `AVAILABLE_SECTIONS`
+3. **Create Component**: Build the section component
+4. **Update Page**: Add to `sectionComponents` mapping
+5. **Test**: Verify section can be added/removed
 
 ### Styling Editable Elements
 
@@ -228,126 +207,53 @@ title: {
 - **Viewing Mode**: Normal website display, no editing
 - **Preview Mode**: Editable elements show hover states and editing capabilities
 - **Editing State**: Individual fields being actively edited
+- **Section Management**: Hover controls for section operations
 
 ### Data Flow
 
-1. **Initial Load**: Data loaded from `site-data.ts`
-2. **Edit**: Changes stored in `editedData` state + localStorage
-3. **Publish**: Changes saved to backend (TODO: implement API)
-4. **Discard**: Changes cleared, revert to original data
+1. **Initial Load**: Site data loaded from `site-data.ts`
+2. **Preview Mode**: Context provides editing capabilities
+3. **User Edits**: Changes stored in `editedData` state
+4. **Auto-save**: Changes persisted to localStorage
+5. **Publish**: Changes sent to backend (TODO: implement API)
+6. **Discard**: Changes reverted to original state
 
-## 🚀 Deployment
+## 🎯 Section Management Features
 
-The theme includes Docker support:
+### Available Section Types
 
-```bash
-# Build Docker image
-docker build -f Dockerfile.site1 -t theme1 .
+- **Hero Section**: Main banner (required, cannot be removed)
+- **About Section**: Business information
+- **Services Section**: List of services offered
+- **Contact Section**: Contact information and form
+- **Testimonials Section**: Customer reviews
+- **Why Choose Us Section**: Business advantages
+- **Blog Section**: Latest articles/posts
+- **Industries Section**: Industries served
+- **Footer Section**: Site footer (required, cannot be removed)
 
-# Run container
-docker run -p 3000:3000 theme1
-```
+### Section Operations
 
-## 🧪 Testing
+- **Add Section**: Choose from available section types
+- **Remove Section**: Confirmation dialog prevents accidental removal
+- **Reorder Sections**: Drag and drop (future feature)
+- **Edit Section Content**: Use existing EditableText/EditableImage components
 
-### Manual Testing Checklist
+## 🚀 Future Enhancements
 
-- [ ] Preview mode toggle works
-- [ ] Text editing preserves styling
-- [ ] Character limits enforced
-- [ ] Image upload works
-- [ ] Image removal works
-- [ ] Changes persist in localStorage
-- [ ] Publish button shows change count
-- [ ] Discard button clears changes
+- [ ] Drag and drop section reordering
+- [ ] Section templates and presets
+- [ ] Bulk section operations
+- [ ] Section duplication
+- [ ] Undo/redo for section operations
+- [ ] Section visibility controls
+- [ ] Mobile-optimized section management
+- [ ] Section analytics and performance metrics
 
-### Browser Compatibility
+## 📝 Notes
 
-- ✅ Chrome/Edge (recommended)
-- ✅ Firefox
-- ✅ Safari
-- ⚠️ IE11 (limited support)
-
-## �� Troubleshooting
-
-### Common Issues
-
-**"EditableText not working"**
-- Check if field is marked `editable: true` in schema
-- Verify PreviewProvider is wrapping the page
-- Ensure path matches schema structure
-
-**"Image upload not working"**
-- Check file size (max 5MB)
-- Verify file type (images only)
-- Check browser console for errors
-
-**"Changes not persisting"**
-- Check localStorage in browser dev tools
-- Verify PreviewProvider is properly configured
-- Check for JavaScript errors
-
-### Debug Mode
-
-Enable debug logging in `preview-context.tsx`:
-
-```typescript
-console.log('Preview mode:', isPreviewMode)
-console.log('Edited data:', editedData)
-```
-
-## 📚 API Reference
-
-### EditableText Props
-
-```typescript
-interface EditableTextProps {
-  path: string           // Schema path (e.g., "sections.hero.title")
-  value: string          // Current value
-  className?: string     // CSS classes (preserved during editing)
-}
-```
-
-### EditableImage Props
-
-```typescript
-interface EditableImageProps {
-  path: string           // Schema path
-  src: string           // Current image source
-  alt: string           // Alt text
-  width?: number        // Image width
-  height?: number       // Image height
-  className?: string    // CSS classes
-  priority?: boolean    // Next.js image priority
-}
-```
-
-### PreviewContext Methods
-
-```typescript
-const {
-  isPreviewMode,        // boolean - current mode
-  updateField,          // (path, value) => void - update field
-  getValue,             // (path) => any - get current value
-  publishChanges,       // () => void - save changes
-  discardChanges,       // () => void - discard changes
-  changesCount          // number - number of pending changes
-} = usePreviewContext()
-```
-
-## 🤝 Contributing
-
-When adding new editable functionality:
-
-1. **Follow the pattern**: Schema → Data → Component → Test
-2. **Keep it simple**: Use existing EditableText/EditableImage components
-3. **Test thoroughly**: Verify in both viewing and preview modes
-4. **Document changes**: Update this README if adding new features
-
-## 📄 License
-
-This theme is part of the Summit Bookkeeping project.
-
----
-
-**Need help?** Check the troubleshooting section or review the component source code for implementation details.
+- Hero and footer sections cannot be removed for site structure integrity
+- All section operations are preserved in localStorage until published
+- Section picker modal shows available section types with descriptions
+- Confirmation dialogs prevent accidental section removal
+- Original theme1 editing capabilities are fully preserved

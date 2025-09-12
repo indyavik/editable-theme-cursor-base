@@ -1,0 +1,433 @@
+// Combined site configuration with schema and data
+// This file contains both the schema definition and actual site data
+
+// Schema definition
+export const siteSchema = {
+  site: {
+    brand: { type: 'string', maxLength: 50, editable: true, description: 'Business name' },
+    city: { type: 'string', maxLength: 50, editable: true, description: 'Business city' },
+    slug: { type: 'string', maxLength: 30, editable: false, description: 'URL slug' },
+    locale: { type: 'string', maxLength: 10, editable: false, description: 'Site locale' },
+    tone: { type: 'string', maxLength: 20, editable: true, description: 'Brand tone' }
+  },
+  features: {
+    blogEnabled: { type: 'boolean', editable: true, default: true, description: 'Enable blog pages' }
+  },
+  sectionConfig: {
+    hero: {
+      optional: false,
+      removable: false,
+      addable: false,
+      displayName: 'Hero Section',
+      description: 'Main banner with headline and call-to-action',
+      defaultOrder: 10
+    },
+    about: {
+      optional: true,
+      removable: true,
+      addable: true,
+      displayName: 'About Section',
+      description: 'Information about your business',
+      defaultOrder: 20
+    },
+    services: {
+      optional: true,
+      removable: true,
+      addable: true,
+      displayName: 'Services Section',
+      description: 'List of services you offer',
+      defaultOrder: 30
+    },
+    contact: {
+      optional: true,
+      removable: true,
+      addable: true,
+      displayName: 'Contact Section',
+      description: 'Contact information and form',
+      defaultOrder: 80
+    },
+    industriesServed: {
+      optional: true,
+      removable: true,
+      addable: true,
+      displayName: 'Industries Section',
+      description: 'Industries you serve',
+      defaultOrder: 40
+    },
+    testimonials: {
+      optional: true,
+      removable: true,
+      addable: true,
+      displayName: 'Testimonials Section',
+      description: 'Customer reviews and testimonials',
+      defaultOrder: 60
+    },
+    whyChooseUs: {
+      optional: true,
+      removable: true,
+      addable: true,
+      displayName: 'Why Choose Us Section',
+      description: 'Reasons to choose your business',
+      defaultOrder: 70
+    },
+    blogTeaser: {
+      optional: true,
+      removable: true,
+      addable: true,
+      displayName: 'Blog Section',
+      description: 'Latest blog posts or articles',
+      defaultOrder: 100
+    }
+  },
+  sections: {
+    hero: {
+      shortHeadline: { type: 'string', maxLength: 100, editable: true, description: 'Main headline' },
+      subHeadline: { type: 'string', maxLength: 200, editable: true, description: 'Sub headline' },
+      primaryCta: {
+        label: { type: 'string', maxLength: 30, editable: true, description: 'Primary button text' },
+        href: { type: 'string', maxLength: 100, editable: false, description: 'Primary button link' }
+      },
+      secondaryCta: {
+        label: { type: 'string', maxLength: 25, editable: true, description: 'Secondary button text' },
+        href: { type: 'string', maxLength: 100, editable: false, description: 'Secondary button link' }
+      },
+      heroImage: { type: 'image', maxLength: 200, editable: true, description: 'Hero section image' }
+    },
+    about: {
+      title: { type: 'string', maxLength: 100, editable: true, description: 'About section title' },
+      story: { type: 'string', maxLength: 1000, editable: true, description: 'About story text' },
+      credentials: { type: 'array', editable: true, description: 'Professional credentials' },
+      badges: { type: 'array', editable: true, description: 'Certification badges' }
+    },
+
+    services: {
+      title: { type: 'string', maxLength: 100, editable: true, description: 'Services section title' },
+      items: {
+        type: 'array',
+        editable: true,
+        description: 'List of services',
+        items: {
+          type: 'object',
+          properties: {
+            title: { type: 'string', maxLength: 50 },
+            description: { type: 'string', maxLength: 200 },
+            icon: { type: 'string', maxLength: 50 }
+          }
+        }
+      }
+    },
+    contact: {
+      title: { type: 'string', maxLength: 100, editable: true, description: 'Contact section title' },
+      phone: { type: 'string', maxLength: 20, editable: true, description: 'Phone number' },
+      email: { type: 'string', maxLength: 100, editable: true, description: 'Email address' },
+      address: { type: 'string', maxLength: 200, editable: true, description: 'Business address' },
+      primaryCta: {
+        label: { type: 'string', maxLength: 30, editable: true, description: 'Contact button text' },
+        href: { type: 'string', maxLength: 100, editable: false, description: 'Contact button link' }
+      },
+      form: {
+        enabled: { type: 'boolean', editable: true, description: 'Enable contact form' },
+        fields: {
+          type: 'array',
+          editable: true,
+          description: 'Form fields',
+          items: {
+            type: 'object',
+            properties: {
+              name: { type: 'string', maxLength: 50 },
+              label: { type: 'string', maxLength: 50 },
+              type: { type: 'string', maxLength: 20 },
+              required: { type: 'boolean' }
+            }
+          }
+        }
+      }
+    },
+    industriesServed: {
+      title: { type: 'string', maxLength: 100, editable: true, description: 'Industries section title' },
+      items: {
+        type: 'array',
+        editable: true,
+        description: 'List of industries',
+        items: {
+          type: 'string',
+          maxLength: 50
+        }
+      }
+    },
+    testimonials: {
+      title: { type: 'string', maxLength: 100, editable: true, description: 'Testimonials section title' },
+      items: {
+        type: 'array',
+        editable: true,
+        description: 'List of testimonials',
+        items: {
+          type: 'object',
+          properties: {
+            quote: { type: 'string', maxLength: 300 },
+            author: { type: 'string', maxLength: 50 },
+            company: { type: 'string', maxLength: 50 }
+          }
+        }
+      }
+    },
+    whyChooseUs: {
+      title: { type: 'string', maxLength: 100, editable: true, description: 'Why choose us section title' },
+      bullets: {
+        type: 'array',
+        editable: true,
+        description: 'List of reasons',
+        items: {
+          type: 'string',
+          maxLength: 200
+        }
+      }
+    },
+    blogTeaser: {
+      title: { type: 'string', maxLength: 100, editable: true, description: 'Blog section title' },
+      items: {
+        type: 'array',
+        editable: true,
+        description: 'List of blog posts',
+        items: {
+          type: 'object',
+          properties: {
+            title: { type: 'string', maxLength: 100 },
+            excerpt: { type: 'string', maxLength: 200 },
+            href: { type: 'string', maxLength: 100 }
+          }
+        }
+      }
+    }
+  }
+} as const;
+
+// Actual site data
+export const siteData = {
+  site: {
+    brand: "Summit Books & Tax",
+    city: "Seattle, WA", 
+    slug: "summit-books-tax-seattle",
+    locale: "en",
+    tone: "professional",
+  },
+  features: {
+    blogEnabled: true,
+  },
+  sections: [
+    {
+      id: "hero-main",
+      type: "hero",
+      enabled: true,
+      order: 10,
+      data: {
+        shortHeadline: "Stress-Free Bookkeeping for Small Businesses",
+        subHeadline: "Remote, accurate, and affordable—so you can focus on growth.",
+        primaryCta: { label: "Book a Free Consultation", href: "#contact" },
+        secondaryCta: { label: "See Pricing", href: "#pricing" },
+        heroImage: "/accountant.png",
+      },
+    },
+    {
+      id: "about",
+      type: "about", 
+      enabled: true,
+      order: 20,
+      data: {
+        title: "About Summit bookkeeping",
+        story: "Boutique bookkeeping team with a decade of experience in retail, services, and online brands.",
+        credentials: ["QuickBooks ProAdvisor", "Xero Certified"],
+        badges: ["BBB Accredited"],
+      },
+    },
+    {
+      id: "hero-main",
+      type: "hero",
+      enabled: true,
+      order: 10,
+      data: {
+        shortHeadline: "Stress-Free Bookkeeping for Small Businesses",
+        subHeadline: "Remote, accurate, and affordable—so you can focus on growth.",
+        primaryCta: { label: "Book a Free Consultation", href: "#contact" },
+        secondaryCta: { label: "See Pricing", href: "#pricing" },
+        heroImage: "/accountant.png",
+      },
+    },
+    {
+      id: "about",
+      type: "about",
+      enabled: true,
+      order: 20,
+      data: {
+        title: "About Summit bookkeeping",
+        story: "Boutique bookkeeping team with a decade of experience in retail, services, and online brands.",
+        credentials: ["QuickBooks ProAdvisor", "Xero Certified"],
+        badges: ["BBB Accredited"],
+      },
+    },
+    {
+      id: "services",
+      type: "services",
+      enabled: false,
+      order: 30,
+      data: {
+        title: "Our Services",
+        items: [
+          {
+            title: "Monthly Bookkeeping",
+            description: "On-time closes.",
+            icon: "star"
+          },
+          { 
+            title: "Payroll", 
+            description: "Setup & onboarding",
+            icon: "star" 
+          },
+          { 
+            title: "AP/AR", 
+            description: "Bill pay workflows",
+            icon: "star" 
+          },
+          { 
+            title: "Financial Reporting", 
+            description: "P&L, BS, CF",
+            icon: "star" 
+          },
+        ],
+      },
+    },
+    {
+      id: "industries",
+      type: "industriesServed",
+      enabled: true,
+      order: 40,
+      data: { 
+        title: "Industries We Serve",
+        items: ["Freelancers", "Consultants", "Local Retailers", "Contractors", "Nonprofits"] 
+      },
+    },
+    {
+      id: "proof",
+      type: "testimonials",
+      enabled: true,
+      order: 60,
+      data: {
+        title: "What Our Clients Say",
+        items: [
+          { quote: "They cleaned up a year of books fast.", author: "J. Patel", company: "Greenline Remodels" },
+          { quote: "Accurate, proactive, and easy to reach.", author: "M. Flores" },
+        ],
+      },
+    },
+    {
+      id: "why-us",
+      type: "whyChooseUs",
+      enabled: true,
+      order: 70,
+      data: {
+        title: "Why Choose Summit Bookkeeping",
+        bullets: [
+          "Personal attention—not a call center",
+          "Remote and responsive",
+          "Fixed fees—no surprises",
+          "Tech-forward workflows",
+        ],
+      },
+    },
+    {
+      id: "contact",
+      type: "contact",
+      enabled: true,
+      order: 80,
+      data: {
+        title: "Get In Touch",
+        phone: "(206) 555-0101",
+        email: "hello@summitbooks.tax",
+        address: "123 Pike St, Seattle, WA",
+        primaryCta: { label: "Book a Free Consultation", href: "https://calendly.com/summit-books/intro" },
+        form: {
+          enabled: true,
+          fields: [
+            { name: "name", label: "Name", type: "text", required: true },
+            { name: "email", label: "Email", type: "email", required: true },
+            { name: "message", label: "How can we help?", type: "textarea", required: true },
+          ],
+        },
+      },
+    },
+    {
+      id: "blog",
+      type: "blogTeaser",
+      enabled: true,
+      order: 100,
+      data: {
+        title: "Latest Insights",
+        items: [
+          {
+            title: "Cash vs Accrual for Contractors",
+            href: "/blog/cash-vs-accrual-contractors",
+            excerpt: "Which method fits your jobs pipeline?",
+          },
+          { title: "QBO Bank Rules That Save Hours", href: "/blog/qbo-rules" },
+        ],
+      },
+    },
+    {
+      id: "footer",
+      type: "footer",
+      enabled: true,
+      order: 110,
+      data: {
+        brand: "Summit Books & Tax",
+        email: "hello@summitbooks.tax",
+        phone: "(206) 555-0101",
+        address: "123 Pike St, Seattle, WA",
+        links: [
+          { label: "Privacy", href: "/privacy" },
+          { label: "Terms", href: "/terms" },
+          { label: "Blog", href: "/blog" },
+        ],
+      },
+    }
+  ],
+} as const;
+
+// Type definitions derived from schema
+export type SiteData = typeof siteData;
+export type Section = SiteData["sections"][number];
+
+// Helper functions
+export function getFieldSchema(path: string) {
+  const parts = path.split('.');
+  let current: any = siteSchema;
+  
+  for (const part of parts) {
+    if (current && typeof current === 'object' && part in current) {
+      current = current[part];
+    } else {
+      return null;
+    }
+  }
+  
+  return current;
+}
+
+export function isFieldEditable(path: string): boolean {
+  const schema = getFieldSchema(path);
+  return schema?.editable === true;
+}
+
+export function isSectionOptional(sectionType: string): boolean {
+  const sectionConfig = siteSchema.sectionConfig[sectionType as keyof typeof siteSchema.sectionConfig];
+  return sectionConfig?.optional === true;
+}
+
+export function isSectionRemovable(sectionType: string): boolean {
+  const sectionConfig = siteSchema.sectionConfig[sectionType as keyof typeof siteSchema.sectionConfig];
+  return sectionConfig?.removable === true;
+}
+
+export function isSectionAddable(sectionType: string): boolean {
+  const sectionConfig = siteSchema.sectionConfig[sectionType as keyof typeof siteSchema.sectionConfig];
+  return sectionConfig?.addable === true;
+}

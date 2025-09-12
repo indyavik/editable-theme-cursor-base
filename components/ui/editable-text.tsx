@@ -28,14 +28,17 @@ export function EditableText({
     const currentValue = getValue(path) || value;
     const isEditable = isFieldEditable(path);
     
+    // Safety check: ensure currentValue is a string
+    const displayValue = typeof currentValue === 'string' ? currentValue : String(currentValue || '');
+    
     // If not in preview mode or not editable, render normally
     if (!isPreviewMode || !isEditable) {
-      return children || <span className={className}>{currentValue}</span>;
+      return children || <span className={className}>{displayValue}</span>;
     }
     
     const handleBlur = (e: React.FocusEvent<HTMLDivElement>) => {
       const newValue = e.target.innerText;
-      if (newValue !== currentValue) {
+      if (newValue !== displayValue) {
         updateField(path, newValue);
       }
     };
@@ -46,7 +49,7 @@ export function EditableText({
         e.currentTarget.blur();
       } else if (e.key === 'Escape') {
         e.preventDefault();
-        e.currentTarget.innerText = currentValue;
+        e.currentTarget.innerText = displayValue;
         e.currentTarget.blur();
       }
     };
@@ -61,7 +64,7 @@ export function EditableText({
         onKeyDown={handleKeyDown}
         style={{ minHeight: '1em' }}
       >
-        {currentValue}
+        {displayValue}
       </div>
     );
     
