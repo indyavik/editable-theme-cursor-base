@@ -1,1 +1,1 @@
-self.__NEXT_FONT_MANIFEST="{\"pages\":{},\"app\":{\"/Users/bobbyv/Downloads/editable-theme-cursor-base/app/layout\":[\"static/media/9c18eba18d4baf22-s.p.woff2\",\"static/media/36966cca54120369-s.p.woff2\"]},\"appUsingSizeAdjust\":true,\"pagesUsingSizeAdjust\":false}"
+self.__NEXT_FONT_MANIFEST="{\"pages\":{},\"app\":{\"/Users/bobbyv/Downloads/editable-theme-cursor-base/app/layout\":[\"static/media/13971731025ec697-s.p.woff2\",\"static/media/36966cca54120369-s.p.woff2\"]},\"appUsingSizeAdjust\":true,\"pagesUsingSizeAdjust\":false}"

@@ -5,10 +5,16 @@ import { siteConfig } from './site-config';
 
 // Utility functions for deep object path operations
 function get(obj: any, path: string): any {
+  if (!path || typeof path !== 'string') {
+    return undefined;
+  }
   return path.split('.').reduce((current, key) => current?.[key], obj);
 }
 
 function set(obj: any, path: string, value: any): any {
+  if (!path || typeof path !== 'string') {
+    return obj;
+  }
   const keys = path.split('.');
   const lastKey = keys.pop()!;
   const target = keys.reduce((current, key) => {
