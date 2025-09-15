@@ -114,10 +114,13 @@ export function EditableList({
   const { isPreviewMode, addArrayItem, removeArrayItem, moveArrayItem, canAddArrayItem } = usePreviewContext();
 
   const canAdd = canAddArrayItem(path);
+  
+  // Defensive programming: ensure items is an array
+  const safeItems = Array.isArray(items) ? items : [];
 
   return (
     <div className={className}>
-      {items.map((item, index) => (
+      {safeItems.map((item, index) => (
         <div key={index} className="group">
           {renderItem(item, index)}
           {isPreviewMode && (
@@ -132,7 +135,7 @@ export function EditableList({
               <button
                 type="button"
                 className="px-2 py-1 text-xs bg-gray-100 rounded hover:bg-gray-200"
-                onClick={() => moveArrayItem(path, index, Math.min(items.length - 1, index + 1))}
+                onClick={() => moveArrayItem(path, index, Math.min(safeItems.length - 1, index + 1))}
               >
                 Move Down
               </button>

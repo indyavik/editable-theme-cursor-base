@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { siteData, siteSchema } from './site-config';
+import { getApiUrl, SITE_SLUG, SITE_ID, getAuthHeader } from './theme-config';
+import { siteData as baseSiteData } from './site-config';
 
 // Utility functions for deep object path operations
 function get(obj: any, path: string): any {
@@ -15,13 +17,62 @@ function set(obj: any, path: string, value: any): any {
   if (!path || typeof path !== 'string') {
     return obj;
   }
-  const keys = path.split('.');
-  const lastKey = keys.pop()!;
-  const target = keys.reduce((current, key) => {
-    if (!(key in current)) current[key] = {};
-    return current[key];
-  }, obj);
-  target[lastKey] = value;
+  const tokens = path.split('.');
+  let current: any = obj;
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
+    const isLast = i === tokens.length - 1;
+    const nextToken = !isLast ? tokens[i + 1] : undefined;
+    const nextIsIndex = nextToken !== undefined && !isNaN(Number(nextToken));
+    const tokenIsIndex = !isNaN(Number(token));
+
+    if (isLast) {
+      if (tokenIsIndex) {
+        const index = Number(token);
+        if (!Array.isArray(current)) {
+          // If current is not an array, convert it
+          const replacement: any[] = [];
+          // If current was an object with numeric keys, preserve where possible
+          Object.keys(current || {}).forEach((k) => {
+            const num = Number(k);
+            if (!isNaN(num)) replacement[num] = (current as any)[k];
+          });
+          current = replacement;
+        }
+        current[index] = value;
+      } else {
+        current[token] = value;
+      }
+      break;
+    }
+
+    if (tokenIsIndex) {
+      // Ensure current is array
+      if (!Array.isArray(current)) {
+        const replacement: any[] = [];
+        Object.keys(current || {}).forEach((k) => {
+          const num = Number(k);
+          if (!isNaN(num)) replacement[num] = (current as any)[k];
+        });
+        // Mutate the parent ref by returning array to caller
+        // But since we don't keep parent reference, rely on caller having set it already
+      }
+      const index = Number(token);
+      if (!Array.isArray(current)) current = [];
+      if (current[index] === undefined) {
+        current[index] = nextIsIndex ? [] : {};
+      }
+      current = current[index];
+      continue;
+    }
+
+    if (!(token in current)) {
+      current[token] = nextIsIndex ? [] : {};
+    } else if (nextIsIndex && !Array.isArray(current[token])) {
+      current[token] = [];
+    }
+    current = current[token];
+  }
   return obj;
 }
 
@@ -217,8 +268,12 @@ function getArrayFromLiveState(arrayPath: string, getSectionsFn: () => any[]): a
   const sectionId = parts[1];
   const innerPath = parts.slice(2).join('.');
   const section = getSectionsFn().find((s: any) => s.id === sectionId);
-  if (!section) return [];
+  if (!section) {
+    console.warn(`Section not found for ID: ${sectionId}`);
+    return [];
+  }
   const arr = get(section.data, innerPath);
+  console.log(`getArrayFromLiveState: ${arrayPath} -> sectionId: ${sectionId}, innerPath: ${innerPath}, arr:`, arr);
   return Array.isArray(arr) ? arr : [];
 }
 
@@ -259,16 +314,51 @@ function isPlainObject(value: any): boolean {
 }
 
 function deepMerge(target: any, source: any): any {
-  if (!isPlainObject(target) || !isPlainObject(source)) {
+  // If either is array, handle specially
+  if (Array.isArray(target) || Array.isArray(source)) {
+    if (Array.isArray(target) && Array.isArray(source)) {
+      // Heuristic: if source is dense (no holes/undefined), treat as replacement (used for add/remove/move)
+      // If source is sparse (only some indices provided), treat as overlay by index (used for single-item edits)
+      const isSparse = (arr: any[]): boolean => {
+        for (let i = 0; i < arr.length; i++) {
+          if (!(i in arr)) return true; // hole
+          if (arr[i] === undefined) return true;
+        }
+        return false;
+      };
+      if (!isSparse(source)) {
+        return [...source];
+      }
+      const maxLen = Math.max(target.length, source.length);
+      const merged: any[] = new Array(maxLen);
+      for (let i = 0; i < maxLen; i++) {
+        const tVal = target[i];
+        const sVal = source[i];
+        if (sVal === undefined) {
+          merged[i] = tVal;
+        } else if (tVal === undefined) {
+          merged[i] = sVal;
+        } else {
+          merged[i] = deepMerge(tVal, sVal);
+        }
+      }
+      return merged;
+    }
+    // If only source is array, clone it; if only target is array, prefer source
     if (Array.isArray(source)) return [...source];
     return source;
   }
+
+  if (!isPlainObject(target) || !isPlainObject(source)) {
+    return source;
+  }
+
   const result: any = { ...target };
   Object.keys(source).forEach((key) => {
     const t = (target as any)[key];
     const s = (source as any)[key];
-    if (Array.isArray(s)) {
-      result[key] = Array.isArray(t) ? [...s] : [...s];
+    if (Array.isArray(s) || Array.isArray(t)) {
+      result[key] = deepMerge(Array.isArray(t) ? t : [], Array.isArray(s) ? s : []);
     } else if (isPlainObject(t) && isPlainObject(s)) {
       result[key] = deepMerge(t, s);
     } else {
@@ -284,17 +374,20 @@ export function PreviewProvider({ children, initialData, schema, siteSlug, pageT
   const [sections, setSections] = useState(initialData.sections || []);
 
   const updateField = (path: string, value: any) => {
+    console.log(`updateField: ${path} =`, value);
     setEditedData(prev => {
       const newData = { ...prev };
       set(newData, path, value);
+      console.log(`updateField: newData after set:`, newData);
+      
+      // Auto-save to localStorage for persistence
+      if (typeof window !== 'undefined') {
+        const storageKey = `preview-${siteSlug || 'default'}`;
+        localStorage.setItem(storageKey, JSON.stringify(newData));
+      }
+      
       return newData;
     });
-    
-    // Auto-save to localStorage for persistence
-    if (typeof window !== 'undefined') {
-      const storageKey = `preview-${siteSlug || 'default'}`;
-      localStorage.setItem(storageKey, JSON.stringify({ ...editedData, [path]: value }));
-    }
   };
 
   const getValue = (path: string): any => {
@@ -320,6 +413,7 @@ export function PreviewProvider({ children, initialData, schema, siteSlug, pageT
   const getSections = (): any[] => {
     // Return sections with any edits applied
     return sections.map((section: any) => {
+      // Get all edits for this section (both section-level and field-level)
       const sectionEdits = get(editedData, `sections.${section.id}`);
       if (sectionEdits) {
         const mergedData = deepMerge(section.data, sectionEdits);
@@ -433,8 +527,38 @@ export function PreviewProvider({ children, initialData, schema, siteSlug, pageT
 
   const publishChanges = async () => {
     try {
-      console.log('Publishing changes:', editedData);
-      // TODO: Implement API call to publish changes
+      // Build merged siteData snapshot starting from base siteData (to include pages, etc.)
+      const liveSections = getSections();
+      const mergedSiteData = deepMerge(baseSiteData, { ...initialData, sections: liveSections });
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(getAuthHeader() || {}),
+      };
+
+      const payload: any = {
+        siteData: mergedSiteData,
+        publish: true,
+      };
+      if (SITE_SLUG) payload.siteSlug = SITE_SLUG;
+      if (SITE_ID) payload.siteId = SITE_ID;
+
+      console.log('payload', payload);
+
+      const res = await fetch(getApiUrl('/api/sites/publish'), {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload),
+      });
+
+
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `Publish failed: ${res.status}`);
+      }
+
+      // On success: reset edits and autosave
       setEditedData({});
       if (typeof window !== 'undefined') {
         localStorage.removeItem(`preview-${siteSlug || 'default'}`);
